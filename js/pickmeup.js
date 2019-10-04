@@ -947,42 +947,44 @@
 			}
 			if (!options.flat) {
 				dom_remove_class(root_element, 'pmu-hidden');
-				if (options.position instanceof Function) {
-					position = options.position.call(target);
-					left     = position.left;
-					top      = position.top;
-				} else {
-					switch (options.position) {
-						case 'top':
-							top -= root_element.offsetHeight;
-							break;
-						case 'left':
-							left -= root_element.offsetWidth;
-							break;
-						case 'right':
-							left += target.offsetWidth;
-							break;
-						case 'bottom':
-							top += target.offsetHeight;
-							break;
+				if(!options.container){
+					if (options.position instanceof Function) {
+						position = options.position.call(target);
+						left = position.left;
+						top = position.top;
+					} else {
+						switch (options.position) {
+							case 'top':
+								top -= root_element.offsetHeight;
+								break;
+							case 'left':
+								left -= root_element.offsetWidth;
+								break;
+							case 'right':
+								left += target.offsetWidth;
+								break;
+							case 'bottom':
+								top += target.offsetHeight;
+								break;
+						}
+						if (top + root_element.offsetHeight > viewport.t + viewport.h) {
+							top = position.top - root_element.offsetHeight;
+						}
+						if (top < viewport.t) {
+							top = position.top + target.offsetHeight;
+						}
+						if (left + root_element.offsetWidth > viewport.l + viewport.w) {
+							left = position.left - root_element.offsetWidth;
+						}
+						if (left < viewport.l) {
+							left = position.left + target.offsetWidth;
+						}
+						left += 'px';
+						top += 'px';
 					}
-					if (top + root_element.offsetHeight > viewport.t + viewport.h) {
-						top = position.top - root_element.offsetHeight;
-					}
-					if (top < viewport.t) {
-						top = position.top + target.offsetHeight;
-					}
-					if (left + root_element.offsetWidth > viewport.l + viewport.w) {
-						left = position.left - root_element.offsetWidth;
-					}
-					if (left < viewport.l) {
-						left = position.left + target.offsetWidth;
-					}
-					left += 'px';
-					top += 'px';
+					root_element.style.left = left;
+					root_element.style.top = top;
 				}
-				root_element.style.left = left;
-				root_element.style.top  = top;
 				setTimeout(function () {
 					dom_on(target, document.documentElement, 'click', options.bound.hide);
 					dom_on(target, window, 'resize', options.bound.forced_show);
@@ -1296,7 +1298,11 @@
 				target.appendChild(element);
 			} else {
 				dom_add_class(element, 'pmu-hidden');
-				document.body.appendChild(element);
+				if(options.container && typeof options.container == 'string'){
+					document.querySelector(options.container).appendChild(element);
+				} else {
+					document.body.appendChild(element);
+				}
 				dom_on(target, target, 'click', show.bind(target, target, false));
 				dom_on(target, target, 'input', options.bound.update);
 				dom_on(target, target, 'change', options.bound.update);
@@ -1322,6 +1328,7 @@
 		date                      : new Date,
 		default_date              : new Date,
 		flat                      : false,
+		container                 : '',
 		first_day                 : 1,
 		prev                      : '&#9664;',
 		next                      : '&#9654;',
